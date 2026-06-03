@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class KiuTarget(Enum):
-    DEVELOP = "Develop"
+    TESTING = "Testing"
     PRODUCTION = "Production"
 
 
