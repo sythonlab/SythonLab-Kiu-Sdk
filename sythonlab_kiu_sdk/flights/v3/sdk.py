@@ -94,7 +94,7 @@ class KiuFlightSDK:
             logger.debug("Payload: %s", payload)
 
         if method == RequestMethod.POST:
-            response = requests.post(self.url_base, data=payload, headers=headers, timeout=timeout)
+            response = requests.post(self.url_base, data=payload, headers=self.headers, timeout=timeout)
         else:
             raise ValueError("Unsupported request method")
 
