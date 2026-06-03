@@ -2,10 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="sythonlab_kiu_sdk",
-    version="0.0.2",
+    version="0.0.3",
     packages=find_packages(), install_requires=[
         "requests>=2.34.2",
+        "pandas>=3.0.3",
         "python-dotenv>=1.2.2",
+        "xmltodict>=1.0.4",
     ],
     url="https://github.com/sythonlab/SythonLab-Kiu-Sdk",
     author="José Angel Alvarez Abraira",
