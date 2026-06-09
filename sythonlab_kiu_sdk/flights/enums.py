@@ -25,3 +25,11 @@ class RequestMethod(Enum):
     """Represents HTTP request methods."""
 
     POST = "POST"
+
+
+class PassengerType(Enum):
+    """Represents the passengers types."""
+
+    ADULT = "ADT"
+    CHILD = "CNN"
+    INFANT = "INF"

@@ -2,13 +2,13 @@ import json
 import logging
 import os
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, Any, Callable
+from typing import Optional, Dict, Any, Callable, List
 from uuid import uuid4
 
 import requests
 import xmltodict
 
-from sythonlab_kiu_sdk.flights.dataclasses import FlightRequestMetadata
+from sythonlab_kiu_sdk.flights.dataclasses import FlightRequestMetadata, Itinerary, Passenger
 from sythonlab_kiu_sdk.flights.enums import KiuTarget, Currency, FlightResultKind, RequestMethod
 
 logger = logging.getLogger(__name__)
@@ -152,36 +152,113 @@ class KiuFlightSDK:
             timeout: Optional[int] = 100
     ):
         data = {
-            'KIU_AirAvailRQ': {
-                '@EchoToken': '1',
-                '@TimeStamp': datetime.now(),
-                '@Target': self.target.value,
-                '@Version': self.api_version,
-                '@SequenceNmbr': '1',
-                '@PrimaryLangID': 'en-us',
-                '@DirectFlightsOnly': False,
-                '@MaxResponses': 1,
-                '@CombinedItineraries': False,
-                'POS': {
-                    'Source': {
-                        '@AgentSine': self.agent_sine,
-                        '@TerminalID': self.terminal_id,
-                        '@ISOCountry': self.iso_country
+            "KIU_AirAvailRQ": {
+                "@EchoToken": "1",
+                "@TimeStamp": datetime.now(),
+                "@Target": self.target.value,
+                "@Version": self.api_version,
+                "@SequenceNmbr": "1",
+                "@PrimaryLangID": "en-us",
+                "@DirectFlightsOnly": False,
+                "@MaxResponses": 1,
+                "@CombinedItineraries": False,
+                "POS": {
+                    "Source": {
+                        "@AgentSine": self.agent_sine,
+                        "@TerminalID": self.terminal_id,
+                        "@ISOCountry": self.iso_country
                     }
                 },
-                'OriginDestinationInformation': [{
-                    'DepartureDateTime': (datetime.today() + timedelta(days=10)).strftime("%Y-%m-%d"),
-                    'OriginLocation': {
-                        '@LocationCode': "KIN"
+                "OriginDestinationInformation": [{
+                    "DepartureDateTime": (datetime.today() + timedelta(days=10)).strftime("%Y-%m-%d"),
+                    "OriginLocation": {
+                        "@LocationCode": "KIN"
                     },
-                    'DestinationLocation': {
-                        '@LocationCode': "MIA"
+                    "DestinationLocation": {
+                        "@LocationCode": "MIA"
                     }
                 }],
-                'TravelerInfoSummary': {
-                    'AirTravelerAvail': {
-                        'PassengerTypeQuantity': [
-                            {'@Code': "ADT", '@Quantity': 1}
+                "TravelerInfoSummary": {
+                    "AirTravelerAvail": {
+                        "PassengerTypeQuantity": [
+                            {"@Code": "ADT", "@Quantity": 1}
+                        ]
+                    }
+                }
+            }
+        }
+
+        return self.request(
+            request_id=str(uuid4()),
+            payload=data,
+            on_complete=on_complete,
+            show_response=show_response,
+            timeout=timeout
+        )
+
+    def get_availability(
+            self,
+            itineraries: List[Itinerary],
+            passengers: List[Passenger],
+            *,
+            direct_flights_only: Optional[bool] = False,
+            max_stops_qty: Optional[int] = 4,
+            on_complete: Optional[Callable] = None,
+            show_response: bool = False,
+            timeout: Optional[int] = 100
+    ):
+        """
+            Documentation: https://kiuws-docs-agencies.kiusys.net/#eabefb5d-2cc2-4484-b4fb-3101bbb8fe3e
+            Wiki: https://kiu.atlassian.net/wiki/spaces/KOD/pages/41025771/KIU+AirAvailRQ+RS
+
+            Functionality:
+            This method allows users to get the availability scheduled flights for an origin-destination in a certain date.
+            KIU_AirAvailRQ allows also to get availability for more than one origin-destination list by date.
+        """
+
+        itinerary = [
+            {
+                "DepartureDateTime": item.departure_date,
+                "OriginLocation": {
+                    "@LocationCode": item.departing_from
+                },
+                "DestinationLocation": {
+                    "@LocationCode": item.arriving_to
+                }
+            }
+            for item in itineraries
+        ]
+
+        data = {
+            "KIU_AirAvailRQ": {
+                "@EchoToken": "1",
+                "@TimeStamp": datetime.now(),
+                "@Target": self.target.value,
+                "@Version": self.api_version,
+                "@SequenceNmbr": "1",
+                "@PrimaryLangID": "en-us",
+                "@DirectFlightsOnly": str(direct_flights_only).lower(),
+                "@MaxResponses": "50",
+                "@CombinedItineraries": "false",
+                "POS": {
+                    "Source": {
+                        "@AgentSine": self.agent_sine,
+                        "@TerminalID": self.terminal_id,
+                        "@ISOCountry": self.iso_country
+                    }
+                },
+                "OriginDestinationInformation": itinerary,
+                "TravelPreferences": {
+                    "@MaxStopsQuantity": (max_stops_qty, 0)[direct_flights_only is True],
+                    "CabinPref": {
+                        "@Cabin": "Economy"
+                    }
+                },
+                "TravelerInfoSummary": {
+                    "AirTravelerAvail": {
+                        "PassengerTypeQuantity": [
+                            {"@Code": item.kind.value, "@Quantity": item.qty}
+                            for item in passengers
                         ]
                     }
                 }
