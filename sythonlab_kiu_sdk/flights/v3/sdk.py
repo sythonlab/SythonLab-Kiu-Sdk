@@ -118,12 +118,12 @@ class KiuFlightSDK:
             on_complete(metadata=FlightRequestMetadata(
                 status=status_code,
                 request_id=request_id,
-                kind=kind or FlightResultKind.UNKNOWN,
+                kind=kind,
                 headers=headers,
                 request=payload,
                 method=method,
                 url=self.url_base,
-                response=data,
+                response=response.text,
                 start_time=start,
                 end_time=end,
                 duration=(end - start).total_seconds() if end else None,
@@ -268,5 +268,130 @@ class KiuFlightSDK:
             payload=data,
             on_complete=on_complete,
             show_response=show_response,
-            timeout=timeout
+            timeout=timeout,
+            kind=FlightResultKind.FLIGHT_SEARCH
         )
+
+    # def pricing(self,
+    #             *,
+    #             outbound_departure_datetimes: str = None,
+    #             outbound_arrival_datetimes: str = None,
+    #             outbound_origin_location_codes: str = None,
+    #             outbound_destination_location_codes: str = None,
+    #             outbound_airline_codes: str = None,
+    #             outbound_flight_numbers: str = None,
+    #             outbound_rbd_codes: str = None,
+    #             return_departure_datetimes: str = None,
+    #             return_arrival_datetimes: str = None,
+    #             return_origin_location_codes: str = None,
+    #             return_destination_location_codes: str = None,
+    #             return_airline_codes: str = None,
+    #             return_flight_numbers: str = None,
+    #             return_rbd_codes: str = None,
+    #             passenger_qty: list = None,
+    #             on_complete: Optional[Callable] = None,
+    #             show_response: bool = False,
+    #             timeout: Optional[int] = 100
+    #             ):
+    #     """
+    #         Documentation: https://kiuws-docs-agencies.kiusys.net/#511cc2ef-2e0b-4498-91b6-a32d549b8544
+    #         Wiki: https://kiu.atlassian.net/wiki/spaces/KOD/pages/41157010/KIU+AirPrice
+    # 
+    #         Functionality:
+    #         This method offer to consumers two operation options:
+    #         1 - Price itinerary without booked.
+    #         2 - Re-price a reservation.
+    #         Also users can reprice or price ancillaries booked in the reservation.
+    # 
+    #         Please see review the examples and the schemas associated.
+    #     """
+    # 
+    #     outbound_flights = []
+    #     return_flights = []
+    # 
+    #     for index in range(len(outbound_airline_codes)):
+    #         outbound_flights.append({
+    #             "@DepartureDateTime": outbound_departure_datetimes[index],
+    #             "@ArrivalDateTime": outbound_arrival_datetimes[index],
+    #             "@FlightNumber": outbound_flight_numbers[index],
+    #             "@ResBookDesigCode": outbound_rbd_codes[index],
+    #             "DepartureAirport": {
+    #                 "@LocationCode": outbound_origin_location_codes[index]
+    #             },
+    #             "ArrivalAirport": {
+    #                 "@LocationCode": outbound_destination_location_codes[index]
+    #             },
+    #             "MarketingAirline": {
+    #                 "@Code": outbound_airline_codes[index]
+    #             }
+    #         })
+    # 
+    #     for index in range(len(return_airline_codes)):
+    #         return_flights.append({
+    #             "@DepartureDateTime": return_departure_datetimes[index],
+    #             "@ArrivalDateTime": return_arrival_datetimes[index],
+    #             "@FlightNumber": return_flight_numbers[index],
+    #             "@ResBookDesigCode": return_rbd_codes[index],
+    #             "DepartureAirport": {
+    #                 "@LocationCode": return_origin_location_codes[index]
+    #             },
+    #             "ArrivalAirport": {
+    #                 "@LocationCode": return_destination_location_codes[index]
+    #             },
+    #             "MarketingAirline": {
+    #                 "@Code": return_airline_codes[index]
+    #             }
+    #         })
+    # 
+    #     options = [{'FlightSegment': outbound_flights}]
+    # 
+    #     if return_flights:
+    #         options.append({'FlightSegment': return_flights})
+    # 
+    #     data = {
+    #         'KIU_AirPriceRQ': {
+    #             "@EchoToken": "WS3DOCEXAMPLE",
+    #             "@TimeStamp": datetime.now(),
+    #             '@Target': self.target,
+    #             "@Version": "3.0",
+    #             "@SequenceNmbr": "1",
+    #             "@PrimaryLangID": "en-us",
+    #             "POS": {
+    #                 "Source": {
+    #                     "@AgentSine": self.agent_sine,
+    #                     "@TerminalID": self.terminal_id,
+    #                     "@ISOCountry": self.iso_country,
+    #                     "@ISOCurrency": self.iso_currency,
+    #                     "RequestorID": {
+    #                         "@Type": "5"
+    #                     },
+    #                     "BookingChannel": {
+    #                         "@Type": "1"
+    #                     }
+    #                 }
+    #             },
+    #             "AirItinerary": {
+    #                 "OriginDestinationOptions": {
+    #                     "OriginDestinationOption": options
+    #                 }
+    #             },
+    #             "TravelerInfoSummary": {
+    #                 "PriceRequestInformation": None,
+    #                 "AirTravelerAvail": {
+    #                     "PassengerTypeQuantity": [
+    #                         {'@Code': item['passenger_class'], '@Quantity': item['passenger_qty']}
+    #                         for item in passenger_qty
+    #                     ]
+    #                 }
+    #             }
+    #         }
+    #     }
+    # 
+    #     return self.request(
+    #         request_id=str(uuid4()),
+    #         payload=data,
+    #         on_complete=on_complete,
+    #         show_response=show_response,
+    #         timeout=timeout,
+    #         kind=FlightResultKind.FLIGHT_PRICING
+    #     )

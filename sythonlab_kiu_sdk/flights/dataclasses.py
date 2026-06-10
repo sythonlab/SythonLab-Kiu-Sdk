@@ -13,13 +13,13 @@ class FlightRequestMetadata:
     request_id: str
     method: RequestMethod
     url: str
-    kind: FlightResultKind
     headers: Any
     request: Any
     response: Any
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     duration: Optional[float] = None
+    kind: Optional[FlightResultKind] = None
 
 
 @dataclass

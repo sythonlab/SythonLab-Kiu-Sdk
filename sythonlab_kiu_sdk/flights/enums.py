@@ -16,9 +16,8 @@ class Currency(Enum):
 class FlightResultKind(Enum):
     """Enum for the kind of flight result."""
 
-    UNKNOWN = "UNKNOWN"
-    LOGIN = "LOGIN"
     FLIGHT_SEARCH = "FLIGHT_SEARCH"
+    FLIGHT_PRICING = "FLIGHT_PRICING"
 
 
 class RequestMethod(Enum):
