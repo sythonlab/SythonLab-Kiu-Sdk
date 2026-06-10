@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sythonlab_kiu_sdk",
-    version="0.0.7",
+    version="0.0.8",
     packages=find_packages(), install_requires=[
         "requests>=2.34.2",
         "pandas>=3.0.3",

@@ -37,3 +37,16 @@ class Passenger:
 
     kind: PassengerType
     qty: int
+
+
+@dataclass
+class ItineraryTravel:
+    """Dataclass for flight itinerary travel."""
+
+    departure_datetime: str
+    arrival_datetime: str
+    flight_number: str
+    flight_class: str
+    origin: str
+    destination: str
+    airline_iata: str
